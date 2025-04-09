@@ -106,10 +106,7 @@ export default function ClientRootLayout({
             <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="container mx-auto flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-6">
-                  <Link
-                    href="/"
-                    className="flex items-center gap-2 text-xl font-bold text-pink-600 transition-colors hover:text-pink-700"
-                  >
+                  <div className="flex items-center gap-2 text-xl font-bold text-pink-600 transition-colors hover:text-pink-700 ">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -125,7 +122,7 @@ export default function ClientRootLayout({
                       <path d="M17.5 12a5.5 5.5 0 1 0-11 0 5.5 5.5 0 0 0 11 0z" />
                     </svg>
                     Chibi.com
-                  </Link>
+                  </div>
                   <nav className="hidden md:flex md:gap-6">
                     {isLoggedIn ? (
                       // Logged in navigation
