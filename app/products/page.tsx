@@ -53,7 +53,7 @@ export default function ProductsPage() {
           name: "Interactive Laser Toy",
           price: 19.99,
           category: "Toys",
-          image: "/placeholder.svg?height=300&width=300",
+          image: "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQxP3jNlqe1jlXVSlKO8LsFweCI5isRttIh21BEuosEtks47AXSz27zZvk5IDt2Aeo0oFDZGDKvGMmhtrvv3ksDxGRmJ6_twRiV6NWnw4jvddCA3m3b6sS9",
           rating: 4.8,
           featured: true,
           sold: 128,
@@ -516,7 +516,7 @@ export default function ProductsPage() {
                     <Card className="overflow-hidden border-none transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                       <div className="relative aspect-square overflow-hidden bg-muted">
                         <img
-                          src={product.image || "/placeholder.svg"}
+                          src={product.image}
                           alt={product.name}
                           className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                         />
