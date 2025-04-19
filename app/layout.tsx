@@ -1,6 +1,8 @@
 import type React from "react"
 import { Inter } from "next/font/google"
 import ClientRootLayout from "./ClientRootLayout"
+import { AuthProvider } from "@/components/auth-context"
+import { CartProvider } from "@/components/cart-context"
 
 import "./globals.css"
 
@@ -9,7 +11,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "Chibi.com - Premium Cat Products",
   description: "The best products for your feline friend. Shop toys, food, accessories and more.",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -17,9 +18,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <ClientRootLayout>{children}</ClientRootLayout>
+  return (
+    <AuthProvider>
+      <CartProvider>
+        <ClientRootLayout>{children}</ClientRootLayout>
+      </CartProvider>
+    </AuthProvider>
+  )
 }
-
-
-
-import './globals.css'
