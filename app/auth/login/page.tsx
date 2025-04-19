@@ -84,8 +84,11 @@ export default function LoginPage() {
         avatar: "/placeholder.svg?height=40&width=40",
       }
 
-      // Store user in localStorage (in a real app, you'd use cookies or a more secure method)
+      // Store user in localStorage
       localStorage.setItem("user", JSON.stringify(userData))
+
+      // Trigger auth change event
+      window.dispatchEvent(new Event("auth-change"))
 
       toast({
         title: "Login successful",
@@ -125,8 +128,11 @@ export default function LoginPage() {
         avatar: "/placeholder.svg?height=40&width=40",
       }
 
-      // Store user in localStorage (in a real app, you'd use cookies or a more secure method)
+      // Store user in localStorage
       localStorage.setItem("user", JSON.stringify(userData))
+
+      // Trigger auth change event
+      window.dispatchEvent(new Event("auth-change"))
 
       toast({
         title: "Login successful",
@@ -348,4 +354,3 @@ export default function LoginPage() {
     </PageTransition>
   )
 }
-

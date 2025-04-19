@@ -106,44 +106,6 @@ export default function RegisterPage() {
     return valid
   }
 
-  const handleGoogleRegister = async () => {
-    setIsLoading(true)
-
-    try {
-      // In a real app, this would be a Firebase Google Auth call
-      // For demo purposes, we'll simulate a successful registration
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      // Mock user data
-      const userData = {
-        id: "google-user-123",
-        name: "New Cat Lover",
-        email: "newcatlover@example.com",
-        avatar: "/placeholder.svg?height=40&width=40",
-      }
-
-      // Store user in localStorage (in a real app, you'd use cookies or a more secure method)
-      localStorage.setItem("user", JSON.stringify(userData))
-
-      toast({
-        title: "Registration successful",
-        description: "Welcome to Chibi.com!",
-        variant: "success",
-      })
-
-      // Redirect to products page
-      router.push("/products")
-    } catch (error) {
-      toast({
-        title: "Registration failed",
-        description: "There was an error with Google authentication. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -163,8 +125,11 @@ export default function RegisterPage() {
         avatar: "/placeholder.svg?height=40&width=40",
       }
 
-      // Store user in localStorage (in a real app, you'd use cookies or a more secure method)
+      // Store user in localStorage
       localStorage.setItem("user", JSON.stringify(userData))
+
+      // Trigger auth change event
+      window.dispatchEvent(new Event("auth-change"))
 
       toast({
         title: "Registration successful",
@@ -177,6 +142,47 @@ export default function RegisterPage() {
       toast({
         title: "Registration failed",
         description: "There was an error creating your account. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleRegister = async () => {
+    setIsLoading(true)
+
+    try {
+      // In a real app, this would be a Firebase Google Auth call
+      // For demo purposes, we'll simulate a successful registration
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+
+      // Mock user data
+      const userData = {
+        id: "google-user-123",
+        name: "New Cat Lover",
+        email: "newcatlover@example.com",
+        avatar: "/placeholder.svg?height=40&width=40",
+      }
+
+      // Store user in localStorage
+      localStorage.setItem("user", JSON.stringify(userData))
+
+      // Trigger auth change event
+      window.dispatchEvent(new Event("auth-change"))
+
+      toast({
+        title: "Registration successful",
+        description: "Welcome to Chibi.com!",
+        variant: "success",
+      })
+
+      // Redirect to products page
+      router.push("/products")
+    } catch (error) {
+      toast({
+        title: "Registration failed",
+        description: "There was an error with Google authentication. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -402,4 +408,3 @@ export default function RegisterPage() {
     </PageTransition>
   )
 }
-

@@ -13,6 +13,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
 
+// Import the cart context
+import { useCart, type CartItem } from "@/components/cart-context"
+import { useRouter } from "next/navigation"
+
 // Product type definition
 type Product = {
   id: string
@@ -58,6 +62,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [isWishlisted, setIsWishlisted] = useState(false)
 
   const { toast } = useToast()
+  const router = useRouter()
+
+  // Add this line inside the component function, near the top with other hooks
+  const { addToCart: addItemToCart } = useCart()
 
   // Fetch product data
   useEffect(() => {
@@ -195,26 +203,55 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   }
 
   // Handle add to cart
-  const addToCart = () => {
-    // In a real app, this would add the product to a cart state or make an API call
-    toast({
-      title: "Added to cart",
-      description: `${quantity} x ${product?.name} added to your cart.`,
-    })
-  }
+  // const addToCart = () => {
+  //   // In a real app, this would add the product to a cart state or make an API call
+  //   toast({
+  //     title: "Added to cart",
+  //     description: `${quantity} x ${product?.name} added to your cart.`,
+  //   })
+  // }
 
   // Handle buy now
-  const buyNow = () => {
-    // In a real app, this would redirect to checkout with the selected product
-    toast({
-      title: "Proceeding to checkout",
-      description: `Preparing checkout for ${quantity} x ${product?.name}.`,
-    })
+  // const buyNow = () => {
+  //   // In a real app, this would redirect to checkout with the selected product
+  //   toast({
+  //     title: "Proceeding to checkout",
+  //     description: `Preparing checkout for ${quantity} x ${product?.name}.`,
+  //   })
 
-    // Simulate redirect to checkout
-    setTimeout(() => {
-      window.location.href = `/checkout/${params.id}`
-    }, 1000)
+  //   // Simulate redirect to checkout
+  //   setTimeout(() => {
+  //     window.location.href = `/checkout/${params.id}`
+  //   }, 1000)
+  // }
+
+  // Replace the addToCart function with this improved version
+  const handleAddToCart = () => {
+    if (!product) return
+
+    // Create cart item from product
+    const cartItem: CartItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: quantity,
+      image: product.images[0],
+      category: product.category,
+    }
+
+    // Add to cart
+    addItemToCart(cartItem)
+  }
+
+  // Replace the buyNow function with this improved version
+  const buyNow = () => {
+    if (!product) return
+
+    // Add to cart first
+    handleAddToCart()
+
+    // Then redirect to checkout
+    router.push(`/cart`)
   }
 
   // Toggle wishlist
@@ -427,7 +464,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <div className="mb-6 flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={product.seller.avatar} alt={product.seller.name} />
+                  <AvatarImage src={product.seller.avatar || "/placeholder.svg"} alt={product.seller.name} />
                   <AvatarFallback>{product.seller.name.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div>
@@ -445,7 +482,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <Button className="flex-1 bg-pink-600 hover:bg-pink-700" onClick={buyNow}>
                 Buy Now
               </Button>
-              <Button variant="outline" className="flex-1" onClick={addToCart}>
+              <Button variant="outline" className="flex-1" onClick={handleAddToCart}>
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Add to Cart
               </Button>
@@ -569,7 +606,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                       <div key={index}>
                         <div className="mb-2 flex items-center gap-2">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={review.avatar} alt={review.user} />
+                            <AvatarImage src={review.avatar || "/placeholder.svg"} alt={review.user} />
                             <AvatarFallback>{review.user.slice(0, 2).toUpperCase()}</AvatarFallback>
                           </Avatar>
                           <div>
@@ -752,4 +789,3 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     </div>
   )
 }
-
