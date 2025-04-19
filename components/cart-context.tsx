@@ -68,17 +68,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     loadCart()
 
-    // Listen for cart changes from other components
-    const handleCartChange = () => {
-      loadCart()
+    // Listen for storage events from other tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "cart") {
+        loadCart()
+      }
     }
 
-    window.addEventListener("cart-change", handleCartChange)
-    window.addEventListener("storage", handleCartChange)
+    window.addEventListener("storage", handleStorageChange)
 
     return () => {
-      window.removeEventListener("cart-change", handleCartChange)
-      window.removeEventListener("storage", handleCartChange)
+      window.removeEventListener("storage", handleStorageChange)
     }
   }, [])
 
@@ -86,9 +86,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isLoading) {
       localStorage.setItem("cart", JSON.stringify(cartItems))
-
-      // Trigger cart change event
-      window.dispatchEvent(new Event("cart-change"))
     }
   }, [cartItems, isLoading])
 
