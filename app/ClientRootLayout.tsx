@@ -42,45 +42,60 @@ export default function ClientRootLayout({
 
   // Check if user is logged in
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
     // Check if user is logged in
-    const user = localStorage.getItem("user")
-    setIsLoggedIn(!!user)
+    const checkUserStatus = () => {
+      const userData = localStorage.getItem("user")
+      setIsLoggedIn(!!userData)
 
-    // Get cart count
-    const cart = localStorage.getItem("cart")
-    if (cart) {
-      try {
-        const cartItems = JSON.parse(cart)
-        setCartCount(cartItems.length || 0)
-      } catch (e) {
-        setCartCount(0)
+      if (userData) {
+        try {
+          setUser(JSON.parse(userData))
+        } catch (e) {
+          console.error("Error parsing user data:", e)
+          setIsLoggedIn(false)
+          localStorage.removeItem("user") // Clear invalid data
+        }
+      } else {
+        setUser(null)
       }
-    }
 
-    // Listen for storage changes (login/logout/cart updates)
-    const handleStorageChange = () => {
-      const user = localStorage.getItem("user")
-      setIsLoggedIn(!!user)
-
+      // Get cart count
       const cart = localStorage.getItem("cart")
       if (cart) {
         try {
           const cartItems = JSON.parse(cart)
-          setCartCount(cartItems.length || 0)
+          setCartCount(Array.isArray(cartItems) ? cartItems.length : 0)
         } catch (e) {
+          console.error("Error parsing cart data:", e)
           setCartCount(0)
+          localStorage.removeItem("cart") // Clear invalid data
         }
       } else {
         setCartCount(0)
       }
     }
 
+    // Initial check
+    checkUserStatus()
+
+    // Listen for storage changes (login/logout/cart updates)
+    const handleStorageChange = () => {
+      checkUserStatus()
+    }
+
     window.addEventListener("storage", handleStorageChange)
+
+    // Create a custom event listener for auth changes
+    window.addEventListener("auth-change", handleStorageChange)
+    window.addEventListener("cart-change", handleStorageChange)
 
     return () => {
       window.removeEventListener("storage", handleStorageChange)
+      window.removeEventListener("auth-change", handleStorageChange)
+      window.removeEventListener("cart-change", handleStorageChange)
     }
   }, [])
 
@@ -106,7 +121,10 @@ export default function ClientRootLayout({
             <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="container mx-auto flex h-16 items-center justify-between px-4">
                 <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-2 text-xl font-bold text-pink-600 transition-colors hover:text-pink-700 ">
+                  <Link
+                    href="/"
+                    className="flex items-center gap-2 text-xl font-bold text-pink-600 transition-colors hover:text-pink-700"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -122,7 +140,7 @@ export default function ClientRootLayout({
                       <path d="M17.5 12a5.5 5.5 0 1 0-11 0 5.5 5.5 0 0 0 11 0z" />
                     </svg>
                     Chibi.com
-                  </div>
+                  </Link>
                   <nav className="hidden md:flex md:gap-6">
                     {isLoggedIn ? (
                       // Logged in navigation
@@ -689,8 +707,8 @@ function UserButton() {
 
     router.push("/")
 
-    // Trigger storage event for other components to update
-    window.dispatchEvent(new Event("storage"))
+    // Trigger custom event for other components to update
+    window.dispatchEvent(new Event("auth-change"))
   }
 
   if (!user) {
@@ -712,7 +730,7 @@ function UserButton() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full">
           <Avatar className="h-8 w-8 transition-transform duration-300 hover:scale-110">
-            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
             <AvatarFallback>{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
         </Button>
@@ -773,7 +791,7 @@ function MobileUserButton({ onClose }: { onClose: () => void }) {
     router.push("/")
 
     // Trigger storage event for other components to update
-    window.dispatchEvent(new Event("storage"))
+    window.dispatchEvent(new Event("auth-change"))
   }
 
   const navigateTo = (path: string) => {
@@ -796,7 +814,7 @@ function MobileUserButton({ onClose }: { onClose: () => void }) {
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10">
-          <AvatarImage src={user.avatar} alt={user.name} />
+          <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
           <AvatarFallback>{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div>
@@ -825,4 +843,3 @@ function MobileUserButton({ onClose }: { onClose: () => void }) {
     </div>
   )
 }
-
