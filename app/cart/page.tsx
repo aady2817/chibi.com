@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Trash2, ShoppingBag, ArrowRight, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react"
@@ -11,97 +11,21 @@ import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { PageTransition } from "@/components/page-transition"
 import { Input } from "@/components/ui/input"
-
-// Cart item type
-type CartItem = {
-  id: string | number
-  name: string
-  price: number
-  quantity: number
-  image: string
-  category: string
-}
+import { useCart } from "@/components/cart-context"
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
-  const [loading, setLoading] = useState(true)
   const [promoCode, setPromoCode] = useState("")
   const [promoApplied, setPromoApplied] = useState(false)
   const [discount, setDiscount] = useState(0)
 
   const router = useRouter()
   const { toast } = useToast()
+  const { cartItems, cartCount, subtotal, updateQuantity, removeFromCart, clearCart, isLoading } = useCart()
 
-  // Load cart items from localStorage
-  useEffect(() => {
-    setLoading(true)
-    try {
-      const storedCart = localStorage.getItem("cart")
-      if (storedCart) {
-        setCartItems(JSON.parse(storedCart))
-      }
-    } catch (error) {
-      console.error("Error loading cart:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load your cart. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [toast])
-
-  // Save cart to localStorage whenever it changes
-  useEffect(() => {
-    if (!loading) {
-      localStorage.setItem("cart", JSON.stringify(cartItems))
-
-      // Trigger storage event for other components to update
-      window.dispatchEvent(new Event("storage"))
-    }
-  }, [cartItems, loading])
-
-  // Calculate cart totals
-  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+  // Calculate shipping and tax
   const shipping = subtotal > 50 ? 0 : 5.99
   const tax = subtotal * 0.08 // 8% tax
   const total = subtotal + shipping + tax - discount
-
-  // Update item quantity
-  const updateQuantity = (id: string | number, newQuantity: number) => {
-    if (newQuantity < 1) return
-
-    setCartItems((prev) => prev.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
-
-    toast({
-      title: "Cart updated",
-      description: "Your cart has been updated.",
-    })
-  }
-
-  // Remove item from cart
-  const removeItem = (id: string | number) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id))
-
-    toast({
-      title: "Item removed",
-      description: "The item has been removed from your cart.",
-    })
-  }
-
-  // Clear cart
-  const clearCart = () => {
-    setCartItems([])
-    setPromoCode("")
-    setPromoApplied(false)
-    setDiscount(0)
-
-    toast({
-      title: "Cart cleared",
-      description: "All items have been removed from your cart.",
-    })
-  }
 
   // Apply promo code
   const applyPromoCode = () => {
@@ -143,9 +67,13 @@ export default function CartPage() {
 
   // Add sample products to cart (for demo purposes)
   const addSampleProducts = () => {
-    const sampleProducts: CartItem[] = [
+    // Clear existing cart first
+    clearCart()
+
+    // Add sample products
+    const sampleProducts = [
       {
-        id: 1,
+        id: "1",
         name: "Interactive Laser Cat Toy",
         price: 19.99,
         quantity: 1,
@@ -153,7 +81,7 @@ export default function CartPage() {
         category: "Toys",
       },
       {
-        id: 2,
+        id: "2",
         name: "Premium Cat Food - Salmon",
         price: 24.99,
         quantity: 2,
@@ -161,7 +89,7 @@ export default function CartPage() {
         category: "Food & Treats",
       },
       {
-        id: 3,
+        id: "3",
         name: "Cozy Cat Bed",
         price: 39.99,
         quantity: 1,
@@ -170,7 +98,28 @@ export default function CartPage() {
       },
     ]
 
-    setCartItems(sampleProducts)
+    // Add each sample product to cart
+    sampleProducts.forEach((product) => {
+      // We're using setTimeout to ensure each product is added separately
+      setTimeout(() => {
+        const cartItem = {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: product.quantity,
+          image: product.image,
+          category: product.category,
+        }
+
+        // Store directly in localStorage to avoid state update issues
+        const currentCart = JSON.parse(localStorage.getItem("cart") || "[]")
+        currentCart.push(cartItem)
+        localStorage.setItem("cart", JSON.stringify(currentCart))
+
+        // Trigger cart change event
+        window.dispatchEvent(new Event("cart-change"))
+      }, 100)
+    })
 
     toast({
       title: "Sample products added",
@@ -183,7 +132,7 @@ export default function CartPage() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="mb-6 text-3xl font-bold">Your Shopping Cart</h1>
 
-        {loading ? (
+        {isLoading ? (
           <div className="flex h-40 items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           </div>
@@ -246,7 +195,7 @@ export default function CartPage() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 text-muted-foreground hover:text-red-500"
-                                onClick={() => removeItem(item.id)}
+                                onClick={() => removeFromCart(item.id)}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -420,4 +369,3 @@ export default function CartPage() {
     </PageTransition>
   )
 }
-
